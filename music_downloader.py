@@ -2,6 +2,22 @@ import yt_dlp
 from datetime import date
 from colorama import Fore
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description="Music Downloader")
+
+parser.add_argument(
+    'url',
+    metavar='url',
+    type=str,
+    help='url of the video that will be downloaded'
+)
+parser.add_argument(
+    '-path',
+    help='Downloading path'
+)
+
+args = parser.parse_args()
 
 def max_duration_filter(info, *, incomplete):
     duration = info.get('duration')
@@ -22,12 +38,16 @@ def download_music(url):
     # fetch toady's date.
     today = date.today()
     # create a path where downloaded music will be stored.
-    created_path = music_path + "/{date}-music".format(date=today)
+    if args.path is None:
+        created_path = music_path + "/{date}-music".format(date=today)
+    else:
+        created_path = music_path + "/" + args.path
+
     # check if the new directory already exists
     if os.path.exists(created_path):
         pass
     else:
-        os.mkdir("{date}-music".format(date=today))
+        os.mkdir(created_path)
     # goes to the download directory
     os.chdir(created_path)
 
@@ -48,4 +68,5 @@ def download_music(url):
         ydl.download([url])
 
     print(f"{Fore.YELLOW}successfully downloaded{Fore.WHITE}")
-    
+
+download_music(args.url)

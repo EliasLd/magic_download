@@ -1,7 +1,8 @@
-from music_link_exctractor import get_video_url
-from music_downloader import download_music
 from colorama import Fore
 import subprocess
+import re
+
+from music_link_exctractor import get_video_url
 
 DESCRIPTION = r'''
 
@@ -15,23 +16,38 @@ DESCRIPTION = r'''
 
 '''
 
+def get_argument_list():
+    cmd_line = input(f"{Fore.BLUE}MagicDownload/VideoDL $ >> {Fore.WHITE}")
+
+    if cmd_line == '..' or cmd_line is None:
+        return [], True
+
+    pattern = r'\s+'
+    cmd_line_list = re.split(pattern, cmd_line)
+    cmd_line_list = [re.sub(r'_', ' ', item) for item in cmd_line_list]
+
+    if len(cmd_line_list) == 1:
+        cmd_line_list.append(None)
+
+    video = cmd_line_list[0]
+    cmd_line_list[0] = get_video_url(video)
+
+    return cmd_line_list, False
+
+
 def menu():
     choix = input(f"{Fore.BLUE}MagicDownload $ >> {Fore.WHITE}")
     match choix:
         case "dl":
             end = False
             while not end : 
-                subprocess.run(["cls"], shell=True)
-                video_name =""
-                video_name = input(f"{Fore.BLUE}Video name ('..' to exit dl mode) $ >> {Fore.WHITE}")
-                # Check if the exit command is entered
-                if video_name == "..":
-                    end = True
+                cmd_args, end = get_argument_list()
+                if end:
                     break
-                
-                url = get_video_url(video_name)
-                if url is not None:
-                    download_music(url)
+                if cmd_args[1] is None:
+                    subprocess.call(['python', 'music_downloader.py', cmd_args[0]])
+                else :
+                    subprocess.call(['python', 'music_downloader.py', cmd_args[0], "-path", cmd_args[1]])
             return False
         case "help":
             print("commands manual", end= ' --- ')
