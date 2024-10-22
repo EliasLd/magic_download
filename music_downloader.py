@@ -2,6 +2,7 @@ import yt_dlp
 from datetime import date
 from colorama import Fore
 import os
+import platform
 import argparse
 
 parser = argparse.ArgumentParser(description="Music Downloader")
@@ -30,10 +31,15 @@ def max_duration_filter(info, *, incomplete):
         return "Skipping the video -> too long"
     
 def get_download_path() -> str:
+    # First get user's operating system.
+    operating_system = str(platform.system().lower()) 
     # Get the current user's name.
     user = os.getlogin()
-    # Goes to the Music directory.
-    music_path = 'C:/Users/{username}/Music'.format(username=user)
+    # Goes to the Music directory depending on user's os.
+    if "windows" in operating_system or "win32" in operating_system:
+        music_path = 'C:/Users/{username}/Music'.format(username=user)
+    else: # Linux, darwin, java etc...
+        music_path = '/home/{username}/Musique'.format(username=user)
     os.chdir(music_path)
     # fetch toady's date.
     today = date.today()
