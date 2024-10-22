@@ -1,4 +1,4 @@
-from youtubesearchpython import VideosSearch as vs
+from youtubesearchpython import VideosSearch as vs, PlaylistsSearch as ps
 from colorama import Fore
 
 def is_valid_duration(duration):
@@ -26,19 +26,25 @@ def is_valid_duration(duration):
     # Check if the video is shorter than 10 minutes (600 seconds)
     return total_seconds_duration < 600
 
-def get_video_url(video_name):
+def get_video_url(name, is_playlist=False):
     '''
     Use the youtubesearchpython package to search a youtube video
-    by its name and return the url of the video.
-    ""return: str containing the video url.
+    or playlist by its name and return the url.
+    ""return: str containing the video or playlist url.
     '''
-    # Search for videos matching the name on youtube
-    search = vs(video_name, limit=3).result()
-    # return the url of the first video matching the duration limits
-    for video in search['result']:  
-        if is_valid_duration(video.get('duration')):
-            print(f"{Fore.YELLOW}Found{Fore.WHITE} : {video.get('title')} \n{Fore.YELLOW}duration{Fore.WHITE} : {video.get('duration')}")
+    if is_playlist:
+        search = ps(name, limit=5).result()
+        for playlist in search['result']:
+            print(f"{Fore.YELLOW}Found playlist{Fore.WHITE} : {playlist.get('title')}")
             validation = input(f"{Fore.YELLOW}Are you sure about this download [y/n] ? >> {Fore.WHITE}")
             if validation == 'y':
-                return video['link']
+                return playlist['link']
+    else:
+        search = vs(name, limit=5).result()
+        for video in search['result']:  
+            if is_valid_duration(video.get('duration')):
+                print(f"{Fore.YELLOW}Found video{Fore.WHITE} : {video.get('title')} \n{Fore.YELLOW}duration{Fore.WHITE} : {video.get('duration')}")
+                validation = input(f"{Fore.YELLOW}Are you sure about this download [y/n] ? >> {Fore.WHITE}")
+                if validation == 'y':
+                    return video['link']
     return None

@@ -16,10 +16,10 @@ DESCRIPTION = r'''
 
 '''
 
-def get_argument_list():
-    cmd_line = input(f"{Fore.BLUE}MagicDownload/VideoDL $ >> {Fore.WHITE}")
+def get_argument_list(mode: str, is_playlist=False):
+    cmd_line = input(f"{Fore.BLUE}MagicDownload/{mode} $ >> {Fore.WHITE}")
 
-    if cmd_line == '..' or cmd_line is None:
+    if cmd_line == '..' or cmd_line[0] is None:
         return [], True
 
     pattern = r'\s+'
@@ -29,8 +29,12 @@ def get_argument_list():
     if len(cmd_line_list) == 1:
         cmd_line_list.append(None)
 
-    video = cmd_line_list[0]
-    cmd_line_list[0] = get_video_url(video)
+    video = cmd_line_list[0]   
+
+    cmd_line_list[0] = get_video_url(video, is_playlist=is_playlist)
+
+    if cmd_line_list[0] is None:
+        return [], True
 
     return cmd_line_list, False
 
@@ -41,7 +45,7 @@ def menu():
         case "dl":
             end = False
             while not end : 
-                cmd_args, end = get_argument_list()
+                cmd_args, end = get_argument_list("VideoDL")
                 if end:
                     break
                 if cmd_args[1] is None:
@@ -49,9 +53,21 @@ def menu():
                 else :
                     subprocess.call(['python', 'music_downloader.py', cmd_args[0], "-path", cmd_args[1]])
             return False
+        case "ply":
+            end = False
+            while not end:
+                cmd_args, end = get_argument_list("PlaylistDL", is_playlist=True)
+                if end:
+                    break
+                if cmd_args[1] is None:
+                    subprocess.call(['python', 'music_downloader.py', cmd_args[0], '-ply'])
+                else:
+                    subprocess.call(['python', 'music_downloader.py', cmd_args[0], "-path", cmd_args[1], '-ply'])
+            return False
         case "help":
             print("commands manual", end= ' --- ')
             print("dl -> enter video downloader mode\n \
+                   ply -> enter playlist downloader mode\n \
                    quit -> exit MagicDownload")
             return False
         case "quit":

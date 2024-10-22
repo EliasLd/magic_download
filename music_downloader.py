@@ -16,6 +16,11 @@ parser.add_argument(
     '-path',
     help='Downloading path'
 )
+parser.add_argument(
+    '-ply',
+    action='store_true',
+    help='Indicates that the url is a playlist'
+)
 
 args = parser.parse_args()
 
@@ -23,13 +28,8 @@ def max_duration_filter(info, *, incomplete):
     duration = info.get('duration')
     if duration > 600:
         return "Skipping the video -> too long"
-
-def download_music(url):
-    '''
-    Download audio (.mp3 format) of the youtube video
-    linked with the specified url.
-    ""url : video's url
-    '''
+    
+def get_download_path() -> str:
     # Get the current user's name.
     user = os.getlogin()
     # Goes to the Music directory.
@@ -48,8 +48,19 @@ def download_music(url):
         pass
     else:
         os.mkdir(created_path)
+    
+    return created_path
+
+
+def download_music(url, is_playlist=False):
+    '''
+    Download audio (.mp3 format) of the youtube video
+    linked with the specified url.
+    ""url : video's url
+    '''
     # goes to the download directory
-    os.chdir(created_path)
+    download_path = get_download_path()
+    os.chdir(download_path)
 
     # download options
     ydl_settings = {
@@ -61,7 +72,8 @@ def download_music(url):
         }],
         'ffmpeg_location': "C:/Users/{username}/scoop/shims/ffmpeg.exe".format(username=os.getlogin()),
         'match_filter': max_duration_filter,
-        'outtmpl': created_path + "/%(title)s.%(ext)s"
+        'outtmpl': download_path + "/%(title)s.%(ext)s",
+        'noplaylist': not is_playlist
     }
 
     with yt_dlp.YoutubeDL(ydl_settings) as ydl:
@@ -69,4 +81,4 @@ def download_music(url):
 
     print(f"{Fore.YELLOW}successfully downloaded{Fore.WHITE}")
 
-download_music(args.url)
+download_music(args.url, args.ply)
