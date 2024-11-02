@@ -57,6 +57,10 @@ def get_download_path() -> str:
     
     return created_path
 
+def get_ffmpeg_location():
+    if platform.system().lower() == "windows":
+        return "C:/Users/{username}/scoop/shims/ffmpeg.exe".format(username=os.getlogin())
+    return None  # No need to specifie it if user is on linux/macos
 
 def download_music(url, is_playlist=False):
     '''
@@ -76,11 +80,14 @@ def download_music(url, is_playlist=False):
             'preferredcodec': 'mp3',
             'preferredquality': '192'
         }],
-        'ffmpeg_location': "C:/Users/{username}/scoop/shims/ffmpeg.exe".format(username=os.getlogin()),
         'match_filter': max_duration_filter,
         'outtmpl': download_path + "/%(title)s.%(ext)s",
         'noplaylist': not is_playlist
     }
+
+    ffmpeg_path = get_ffmpeg_location()
+    if ffmpeg_path:
+        ydl_settings['ffmpeg_location'] = ffmpeg_path
 
     with yt_dlp.YoutubeDL(ydl_settings) as ydl:
         ydl.download([url])
